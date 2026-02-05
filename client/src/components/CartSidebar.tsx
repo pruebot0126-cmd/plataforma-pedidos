@@ -11,12 +11,21 @@ interface CartItem {
   quantity: number;
 }
 
+interface ClientData {
+  name: string;
+  phone: string;
+  latitude: number | null;
+  longitude: number | null;
+  address: string;
+}
+
 interface CartSidebarProps {
   items: CartItem[];
   onRemoveItem: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
   whatsappNumber: string;
   onClose?: () => void;
+  clientData?: ClientData | null;
 }
 
 export default function CartSidebar({
@@ -25,6 +34,7 @@ export default function CartSidebar({
   onUpdateQuantity,
   whatsappNumber,
   onClose,
+  clientData,
 }: CartSidebarProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,20 +46,29 @@ export default function CartSidebar({
 
     setIsSubmitting(true);
 
-    // Construir mensaje para WhatsApp
+    let message = "";
+    
+    if (clientData?.name) {
+      message += `¡Hola! Soy *${clientData.name}*\n`;
+      message += `📱 Teléfono: ${clientData.phone || "No proporcionado"}\n`;
+      message += `📍 Ubicación: ${clientData.address || "No especificada"}\n`;
+      if (clientData.latitude && clientData.longitude) {
+        message += `🗺️ Coordenadas: ${clientData.latitude.toFixed(4)}, ${clientData.longitude.toFixed(4)}\n`;
+      }
+      message += `\n*PEDIDO:*\n`;
+    } else {
+      message = `¡Hola! Me gustaría hacer un pedido:\n\n`;
+    }
+
     const orderText = items
       .map((item) => `• ${item.name} (${item.weight}) x${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
       .join("\n");
 
-    const message = `¡Hola! Me gustaría hacer un pedido:\n\n${orderText}\n\n*Total: $${total.toFixed(2)}*`;
+    message += `${orderText}\n\n*Total: $${total.toFixed(2)}*`;
 
-    // Codificar mensaje para URL
     const encodedMessage = encodeURIComponent(message);
-
-    // URL de WhatsApp Web (sin el +)
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
-    // Abrir WhatsApp en nueva ventana
     window.open(whatsappUrl, "_blank");
 
     setIsSubmitting(false);

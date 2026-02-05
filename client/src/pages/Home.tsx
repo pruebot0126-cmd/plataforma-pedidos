@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ProductListItem from "@/components/ProductListItem";
 import CartSidebar from "@/components/CartSidebar";
+import ClientForm, { ClientData } from "@/components/ClientForm";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
@@ -62,6 +63,7 @@ const WHATSAPP_NUMBER = "5648708096";
 export default function Home() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [clientData, setClientData] = useState<ClientData | null>(null);
 
   const handleAddToCart = (product: {
     id: string;
@@ -97,6 +99,10 @@ export default function Home() {
         )
       );
     }
+  };
+
+  const handleClientFormSubmit = (data: ClientData) => {
+    setClientData(data);
   };
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -184,6 +190,17 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Client Form Section */}
+        <section className="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
+          <ClientForm onSubmit={handleClientFormSubmit} />
+          {clientData && (
+            <div className="mt-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-foreground">
+              <p className="font-semibold">✓ Datos guardados:</p>
+              <p>{clientData.name} • {clientData.phone}</p>
+            </div>
+          )}
+        </section>
+
         {/* Products Section */}
         <section id="products" className="container mx-auto px-3 sm:px-4 py-8 sm:pb-12">
           <h3 className="mb-6 sm:mb-8 font-serif text-2xl sm:text-3xl font-bold text-foreground">
@@ -256,6 +273,7 @@ export default function Home() {
           onUpdateQuantity={handleUpdateQuantity}
           whatsappNumber={WHATSAPP_NUMBER}
           onClose={() => setShowCart(false)}
+          clientData={clientData}
         />
       </div>
     </div>
