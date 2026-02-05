@@ -115,7 +115,7 @@ export default function Home() {
         <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="rounded-full bg-gradient-to-br from-primary to-primary/80 p-1.5 sm:p-2 flex-shrink-0 shadow-md">
-              <span className="text-lg sm:text-xl font-bold text-primary-foreground">🌱</span>
+              <span className="text-lg sm:text-xl font-bold text-primary-foreground">♦️</span>
             </div>
             <div className="min-w-0">
               <h1 className="font-serif text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
@@ -171,7 +171,7 @@ export default function Home() {
                 Semillas Premium para tu Negocio
               </h2>
               <p className="mb-4 sm:mb-6 text-sm sm:text-lg text-foreground/80 leading-relaxed">
-                Compra directamente al mayorista. Productos frescos, de calidad garantizada y precios competitivos para tu negocio.
+                Productos frescos, de calidad garantizada y precios competitivos para tu negocio.
               </p>
               <Button
                 onClick={() => {
@@ -223,7 +223,7 @@ export default function Home() {
         <section className="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
           <div className="mb-8">
             <h3 className="mb-4 font-serif text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              📍 Tus Datos de Entrega
+              📍Datos de Entrega
             </h3>
             <p className="text-foreground/70 text-sm">Completa tu información para procesar tu pedido</p>
           </div>
@@ -270,7 +270,7 @@ export default function Home() {
 
               <div className="rounded-xl bg-card p-6 sm:p-8 shadow-lg border-2 border-accent/20 hover:border-accent/50 transform hover:scale-105 transition-all hover:shadow-xl">
                 <div className="mb-4 inline-flex p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
-                  <Zap className="h-6 w-6 text-accent-foreground" />
+                  <Zap className="h-6 w-6 text-accent-foreground" style={{borderStyle: 'double'}} />
                 </div>
                 <h4 className="mb-3 font-serif text-lg sm:text-xl font-bold text-foreground">
                   Pedidos Rápidos
