@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, MessageCircle } from "lucide-react";
+import { Trash2, MessageCircle, X } from "lucide-react";
 import { useState } from "react";
 
 interface CartItem {
@@ -16,6 +16,7 @@ interface CartSidebarProps {
   onRemoveItem: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
   whatsappNumber: string;
+  onClose?: () => void;
 }
 
 export default function CartSidebar({
@@ -23,6 +24,7 @@ export default function CartSidebar({
   onRemoveItem,
   onUpdateQuantity,
   whatsappNumber,
+  onClose,
 }: CartSidebarProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,13 +57,24 @@ export default function CartSidebar({
 
   return (
     <aside className="fixed right-0 top-0 h-screen w-full max-w-sm border-l border-border bg-card shadow-lg overflow-y-auto">
-      <div className="sticky top-0 border-b border-border bg-card p-3 sm:p-4">
-        <h2 className="font-serif text-xl sm:text-2xl font-bold text-foreground">
-          Tu Pedido
-        </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          {itemCount} {itemCount === 1 ? "producto" : "productos"}
-        </p>
+      <div className="sticky top-0 border-b border-border bg-card p-3 sm:p-4 flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-xl sm:text-2xl font-bold text-foreground">
+            Tu Pedido
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {itemCount} {itemCount === 1 ? "producto" : "productos"}
+          </p>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 hover:bg-muted transition-colors flex-shrink-0"
+            title="Cerrar carrito"
+          >
+            <X className="h-5 w-5 text-foreground" />
+          </button>
+        )}
       </div>
 
       <div className="p-3 sm:p-4">

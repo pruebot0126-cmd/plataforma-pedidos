@@ -255,6 +255,7 @@ export default function Home() {
           onRemoveItem={handleRemoveItem}
           onUpdateQuantity={handleUpdateQuantity}
           whatsappNumber={WHATSAPP_NUMBER}
+          onClose={() => setShowCart(false)}
         />
       </div>
     </div>
