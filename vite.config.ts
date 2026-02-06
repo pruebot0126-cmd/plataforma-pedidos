@@ -54,8 +54,6 @@ const plugins = [
 /* ===================== EXPORT ===================== */
 
 export default defineConfig({
-  base: "/plataforma-pedidos/", // 🔥 CLAVE PARA GITHUB PAGES
-
   plugins,
 
   root: path.resolve(PROJECT_ROOT, "client"),
@@ -69,9 +67,27 @@ export default defineConfig({
   },
 
   envDir: PROJECT_ROOT,
+  publicDir: path.resolve(PROJECT_ROOT, "client", "public"),
 
   build: {
-    outDir: path.resolve(PROJECT_ROOT, "dist"), // 🔥 Pages SOLO LEE ESTO
+    outDir: path.resolve(PROJECT_ROOT, "dist"),
     emptyOutDir: true,
+  },
+
+  server: {
+    host: true,
+    allowedHosts: [
+      ".manuspre.computer",
+      ".manus.computer",
+      ".manus-asia.computer",
+      ".manuscomputer.ai",
+      ".manusvm.computer",
+      "localhost",
+      "127.0.0.1",
+    ],
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
+    },
   },
 });

@@ -23,7 +23,7 @@ interface CartSidebarProps {
   items: CartItem[];
   onRemoveItem: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
-  whatsappNumber: string;
+  whatsappNumber?: string;
   onClose?: () => void;
   clientData?: ClientData | null;
 }
@@ -32,7 +32,7 @@ export default function CartSidebar({
   items,
   onRemoveItem,
   onUpdateQuantity,
-  whatsappNumber,
+  whatsappNumber = "5648708096",
   onClose,
   clientData,
 }: CartSidebarProps) {
