@@ -2,10 +2,10 @@ import { useState, useRef } from "react";
 import ProductListItem from "@/components/ProductListItem";
 import CartSidebar from "@/components/CartSidebar";
 import ClientForm, { ClientData } from "@/components/ClientForm";
+import AdminLoginModal from "@/components/AdminLoginModal";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Award, LogIn } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 
 interface CartItem {
   id: string;
@@ -66,11 +66,20 @@ export default function Home() {
   const [showCart, setShowCart] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [clientData, setClientData] = useState<ClientData | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  // Si el usuario es admin, mostrar panel de pedidos
-  if (user && user.role === "admin") {
-    return <AdminPanel user={user} />;
+  // Si el administrador está autenticado localmente, mostrar panel de pedidos
+  if (isAdminLoggedIn) {
+    return <AdminPanel onLogout={() => setIsAdminLoggedIn(false)} />;
   }
+
+  const handleAdminLogin = (username: string, password: string) => {
+    if (username === "admin" && password === "admin123") {
+      setIsAdminLoggedIn(true);
+      setShowLoginModal(false);
+    }
+  };
 
   const handleAddToCart = (product: {
     id: string;
@@ -166,13 +175,13 @@ export default function Home() {
             >
               <span>🛒 Ver Carrito ({cartCount})</span>
             </Button>
-            <Button
-              onClick={() => window.location.href = getLoginUrl()}
-              className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:shadow-lg text-secondary-foreground font-semibold transform hover:scale-105 transition-all flex items-center justify-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              Iniciar Sesión
-            </Button>
+          <Button
+            onClick={() => setShowLoginModal(true)}
+            className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:shadow-lg text-secondary-foreground font-semibold transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+          >
+            <LogIn className="h-4 w-4" />
+            Iniciar Sesión
+          </Button>
           </div>
         )}
       </header>
@@ -319,12 +328,18 @@ export default function Home() {
           clientData={clientData}
         />
       </div>
+
+      {/* Login Modal */}
+      <AdminLoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleAdminLogin}
+      />
     </div>
   );
 }
 
-function AdminPanel({ user }: { user: any }) {
-  const { logout } = useAuth();
+function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const [showMap, setShowMap] = useState(false);
@@ -384,7 +399,7 @@ function AdminPanel({ user }: { user: any }) {
             Panel de Administración
           </h1>
           <Button
-            onClick={logout}
+            onClick={onLogout}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
             Cerrar Sesión
