@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import ProductListItem from "@/components/ProductListItem";
 import CartSidebar from "@/components/CartSidebar";
 import ClientForm, { ClientData } from "@/components/ClientForm";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Award } from "lucide-react";
+import { Menu, X, Award, LogIn } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
 
 interface CartItem {
   id: string;
@@ -62,10 +61,16 @@ const PRODUCTS = [
 ];
 
 export default function Home() {
-  const { user, loading, logout } = useAuth();
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [clientData, setClientData] = useState<ClientData | null>(null);
+
+  // Si el usuario es admin, mostrar panel de pedidos
+  if (user && user.role === "admin") {
+    return <AdminPanel user={user} />;
+  }
 
   const handleAddToCart = (product: {
     id: string;
@@ -109,28 +114,6 @@ export default function Home() {
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Si el usuario es admin, mostrar panel de pedidos
-  if (user && user.role === "admin") {
-    return <AdminPanel user={user} logout={logout} />;
-  }
-
-  // Si no está autenticado, mostrar página de login
-  if (!user && !loading) {
-    return <LoginPage />;
-  }
-
-  // Si está cargando, mostrar loading
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground/70">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen bg-background">
       {/* Header */}
@@ -150,18 +133,13 @@ export default function Home() {
 
           {/* Mobile Menu Button */}
           <button
-            onClick={() => setShowCart(!showCart)}
+            onClick={() => setShowMenu(!showMenu)}
             className="relative rounded-lg bg-gradient-to-r from-primary to-primary/80 p-2 text-primary-foreground hover:shadow-lg transition-all md:hidden flex-shrink-0 transform hover:scale-105"
           >
-            {showCart ? (
+            {showMenu ? (
               <X className="h-5 w-5" />
             ) : (
               <Menu className="h-5 w-5" />
-            )}
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground animate-pulse">
-                {cartCount}
-              </span>
             )}
           </button>
 
@@ -178,6 +156,25 @@ export default function Home() {
             )}
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {showMenu && (
+          <div className="md:hidden border-t border-border bg-card p-4 space-y-3">
+            <Button
+              onClick={() => setShowCart(!showCart)}
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground font-semibold transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+            >
+              <span>🛒 Ver Carrito ({cartCount})</span>
+            </Button>
+            <Button
+              onClick={() => window.location.href = getLoginUrl()}
+              className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:shadow-lg text-secondary-foreground font-semibold transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+            >
+              <LogIn className="h-4 w-4" />
+              Iniciar Sesión
+            </Button>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -326,76 +323,8 @@ export default function Home() {
   );
 }
 
-function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = () => {
-    // Credenciales de administrador
-    if (username === "admin" && password === "admin123") {
-      window.location.href = getLoginUrl();
-    } else {
-      setError("Usuario o contraseña incorrectos");
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-background">
-      <div className="w-full max-w-md px-4">
-        <div className="rounded-xl bg-card p-8 shadow-lg border-2 border-primary/20">
-          <h1 className="mb-2 font-serif text-3xl font-bold text-black text-center">
-            Semillas Mayoreo
-          </h1>
-          <p className="text-center text-foreground/70 mb-8">Panel de Administración</p>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Usuario
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ingresa tu usuario"
-                className="w-full px-4 py-2 border-2 border-border rounded-lg focus:outline-none focus:border-primary bg-background text-foreground"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Contraseña
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ingresa tu contraseña"
-                className="w-full px-4 py-2 border-2 border-border rounded-lg focus:outline-none focus:border-primary bg-background text-foreground"
-              />
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg text-red-700 text-sm">
-                {error}
-              </div>
-            )}
-
-            <Button
-              onClick={handleLogin}
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground font-semibold transform hover:scale-105 transition-all"
-            >
-              Ingresar
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AdminPanel({ user, logout }: { user: any; logout: () => void }) {
+function AdminPanel({ user }: { user: any }) {
+  const { logout } = useAuth();
   const [orders, setOrders] = useState<any[]>([
     {
       id: 1,
