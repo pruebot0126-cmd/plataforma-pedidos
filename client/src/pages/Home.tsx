@@ -365,22 +365,49 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     script.onload = () => {
       if (!mapRef.current || !window.L) return;
 
-      mapInstance.current = window.L.map(mapRef.current).setView([25.2866, -110.9769], 10);
+      mapInstance.current = window.L.map(mapRef.current).setView([19.4326, -99.1332], 11);
 
       window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors",
         maxZoom: 19,
       }).addTo(mapInstance.current);
 
-      orders.forEach((order: any) => {
+      orders.forEach((order: any, index: number) => {
         const lat = parseFloat(order.latitude);
         const lng = parseFloat(order.longitude);
         if (lat && lng) {
-          const marker = window.L.marker([lat, lng]).addTo(mapInstance.current);
-          marker.bindPopup(`<strong>${order.clientName}</strong><br/>📞 ${order.clientPhone}<br/>💰 $${order.total}`);
+          const clientId = order.id || (index + 1);
+          const marker = window.L.circleMarker([lat, lng], {
+            radius: 20,
+            fillColor: '#16a34a',
+            color: '#fff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.8
+          }).addTo(mapInstance.current);
+          marker.bindPopup(`<div style="text-align: center;"><strong>Cliente #${clientId}</strong><br/><strong>${order.clientName}</strong><br/>📞 ${order.clientPhone}<br/>💰 $${order.total}</div>`);
+          marker.bindTooltip(`Cliente #${clientId}`, { permanent: true, direction: 'center', className: 'leaflet-label' });
         }
       });
     };
+    // Agregar estilos para las etiquetas
+    const style = document.createElement('style');
+    style.textContent = `
+      .leaflet-label {
+        background: #16a34a;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+      }
+    `;
+    document.head.appendChild(style);
     document.head.appendChild(script);
   };
 

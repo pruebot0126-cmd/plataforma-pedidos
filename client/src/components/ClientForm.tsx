@@ -61,7 +61,7 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
 
     const defaultLocation = clientData.latitude && clientData.longitude
       ? [clientData.latitude, clientData.longitude]
-      : [25.2866, -110.9769]; // Hermosillo, Sonora
+      : [19.4326, -99.1332]; // Valle de México
 
     mapInstance.current = window.L.map(mapRef.current).setView(defaultLocation, 15);
 
