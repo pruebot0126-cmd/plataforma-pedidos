@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, User } from "lucide-react";
+import { MapPin, Phone, User, Locate } from "lucide-react";
 
 interface ClientFormProps {
   onSubmit: (data: ClientData) => void;
@@ -31,6 +31,7 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
   });
 
   const [showMap, setShowMap] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -66,7 +67,7 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
 
     // Agregar capa de OpenStreetMap
     window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '© OpenStreetMap contributors',
+      attribution: "© OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(mapInstance.current);
 
@@ -94,6 +95,43 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
         longitude: e.latlng.lng,
       }));
     });
+  };
+
+  const handleGetCurrentLocation = () => {
+    setIsGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setClientData((prev) => ({
+            ...prev,
+            latitude,
+            longitude,
+          }));
+          setIsGettingLocation(false);
+          // Si el mapa está abierto, actualizar su vista
+          if (mapInstance.current && markerRef.current) {
+            markerRef.current.setLatLng([latitude, longitude]);
+            mapInstance.current.setView([latitude, longitude], 15);
+          }
+        },
+        (error) => {
+          setIsGettingLocation(false);
+          let errorMessage = "Error al obtener ubicación";
+          if (error.code === error.PERMISSION_DENIED) {
+            errorMessage = "Permiso denegado. Por favor habilita la geolocalización en tu navegador.";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            errorMessage = "Ubicación no disponible. Intenta de nuevo.";
+          } else if (error.code === error.TIMEOUT) {
+            errorMessage = "Tiempo de espera agotado. Intenta de nuevo.";
+          }
+          alert(errorMessage);
+        }
+      );
+    } else {
+      setIsGettingLocation(false);
+      alert("Tu navegador no soporta geolocalización");
+    }
   };
 
   const handleSave = () => {
@@ -144,12 +182,22 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
             <MapPin className="h-4 w-4" />
             Ubicación *
           </label>
-          <Button
-            onClick={() => setShowMap(!showMap)}
-            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground font-semibold transform hover:scale-105 transition-all"
-          >
-            {showMap ? "Cerrar Mapa" : "Abrir Mapa"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowMap(!showMap)}
+              className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground font-semibold transform hover:scale-105 transition-all"
+            >
+              {showMap ? "Cerrar Mapa" : "Abrir Mapa"}
+            </Button>
+            <Button
+              onClick={handleGetCurrentLocation}
+              disabled={isGettingLocation}
+              className="bg-gradient-to-r from-accent to-accent/80 hover:shadow-lg text-accent-foreground font-semibold transform hover:scale-105 transition-all flex items-center gap-2"
+            >
+              <Locate className="h-4 w-4" />
+              {isGettingLocation ? "..." : "Mi Ubicación"}
+            </Button>
+          </div>
 
           {showMap && (
             <div className="mt-4 space-y-4">
@@ -157,7 +205,7 @@ export default function ClientForm({ onSubmit, isSubmitting = false }: ClientFor
                 ref={mapRef}
                 className="w-full h-64 rounded-lg border-2 border-primary/20 bg-background"
               />
-              <div className="text-sm text-foreground/70">
+              <div className="text-sm text-foreground/70 p-3 bg-primary/5 rounded-lg">
                 {clientData.latitude && clientData.longitude ? (
                   <p>
                     📍 Ubicación: {clientData.latitude.toFixed(4)}, {clientData.longitude.toFixed(4)}
