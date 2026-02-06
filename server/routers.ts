@@ -2,9 +2,10 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { createOrder, getAllOrders } from "./db";
+import { z } from "zod";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -17,12 +18,43 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  orders: router({
+    create: publicProcedure
+      .input(z.object({
+        clientName: z.string(),
+        clientPhone: z.string(),
+        latitude: z.string(),
+        longitude: z.string(),
+        products: z.string(),
+        total: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const result = await createOrder({
+            clientName: input.clientName,
+            clientPhone: input.clientPhone,
+            latitude: input.latitude,
+            longitude: input.longitude,
+            products: input.products,
+            total: input.total,
+            status: "pendiente",
+          });
+          return { success: true, result };
+        } catch (error) {
+          console.error("Error creating order:", error);
+          return { success: false, error: "Failed to create order" };
+        }
+      }),
+    getAll: publicProcedure.query(async () => {
+      try {
+        const orders = await getAllOrders();
+        return orders;
+      } catch (error) {
+        console.error("Error getting orders:", error);
+        return [];
+      }
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

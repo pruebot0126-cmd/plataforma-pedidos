@@ -6,6 +6,7 @@ import AdminLoginModal from "@/components/AdminLoginModal";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Award, LogIn } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 
 interface CartItem {
   id: string;
@@ -343,21 +344,12 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const [showMap, setShowMap] = useState(false);
-  const [orders, setOrders] = useState<any[]>([
-    {
-      id: 1,
-      clientName: "Juan Pérez",
-      clientPhone: "5551234567",
-      latitude: 25.2866,
-      longitude: -110.9769,
-      products: [
-        { name: "Mix de Semillas", quantity: 25, price: 16 },
-        { name: "Semillas de Girasol", quantity: 30, price: 24 },
-      ],
-      total: 940,
-      date: new Date().toLocaleDateString(),
-    },
-  ]);
+  const { data: ordersData = [] } = trpc.orders.getAll.useQuery();
+  
+  const orders = ordersData.map((order: any) => ({
+    ...order,
+    products: JSON.parse(order.products),
+  }));
 
   const initializeMap = () => {
     if (!mapRef.current || !window.L || mapInstance.current) return;
@@ -380,9 +372,11 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         maxZoom: 19,
       }).addTo(mapInstance.current);
 
-      orders.forEach((order) => {
-        if (order.latitude && order.longitude) {
-          const marker = window.L.marker([order.latitude, order.longitude]).addTo(mapInstance.current);
+      orders.forEach((order: any) => {
+        const lat = parseFloat(order.latitude);
+        const lng = parseFloat(order.longitude);
+        if (lat && lng) {
+          const marker = window.L.marker([lat, lng]).addTo(mapInstance.current);
           marker.bindPopup(`<strong>${order.clientName}</strong><br/>📞 ${order.clientPhone}<br/>💰 $${order.total}`);
         }
       });

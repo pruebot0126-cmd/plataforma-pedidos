@@ -25,4 +25,19 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Tabla de pedidos
+export const orders = mysqlTable("orders", {
+  id: int("id").autoincrement().primaryKey(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientPhone: varchar("clientPhone", { length: 20 }).notNull(),
+  latitude: text("latitude").notNull(),
+  longitude: text("longitude").notNull(),
+  products: text("products").notNull(),
+  total: text("total").notNull(),
+  status: mysqlEnum("status", ["pendiente", "en_preparacion", "completado"]).default("pendiente").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
