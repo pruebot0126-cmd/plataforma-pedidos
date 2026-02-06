@@ -107,9 +107,7 @@ export default function AdminLoginModal({
           </div>
         </form>
 
-        <p className="text-xs text-foreground/50 mt-4 text-center">
-          Credenciales de demostración: admin / admin123
-        </p>
+
       </div>
     </div>
   );
