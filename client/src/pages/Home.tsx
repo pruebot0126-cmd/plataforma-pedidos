@@ -386,7 +386,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             fillOpacity: 0.8
           }).addTo(mapInstance.current);
           marker.bindPopup(`<div style="text-align: center;"><strong>Cliente #${clientId}</strong><br/><strong>${order.clientName}</strong><br/>📞 ${order.clientPhone}<br/>💰 $${order.total}</div>`);
-          marker.bindTooltip(`Cliente #${clientId}`, { permanent: true, direction: 'center', className: 'leaflet-label' });
+          marker.bindTooltip(`${clientId}`, { permanent: true, direction: 'center', className: 'leaflet-label' });
         }
       });
     };
