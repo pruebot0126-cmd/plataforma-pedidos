@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ProductListItem from "@/components/ProductListItem";
 import CartSidebar from "@/components/CartSidebar";
 import ClientForm, { ClientData } from "@/components/ClientForm";
@@ -325,11 +325,16 @@ export default function Home() {
 
 function AdminPanel({ user }: { user: any }) {
   const { logout } = useAuth();
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<any>(null);
+  const [showMap, setShowMap] = useState(false);
   const [orders, setOrders] = useState<any[]>([
     {
       id: 1,
       clientName: "Juan Pérez",
       clientPhone: "5551234567",
+      latitude: 25.2866,
+      longitude: -110.9769,
       products: [
         { name: "Mix de Semillas", quantity: 25, price: 16 },
         { name: "Semillas de Girasol", quantity: 30, price: 24 },
@@ -338,6 +343,37 @@ function AdminPanel({ user }: { user: any }) {
       date: new Date().toLocaleDateString(),
     },
   ]);
+
+  const initializeMap = () => {
+    if (!mapRef.current || !window.L || mapInstance.current) return;
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    script.async = true;
+    script.onload = () => {
+      if (!mapRef.current || !window.L) return;
+
+      mapInstance.current = window.L.map(mapRef.current).setView([25.2866, -110.9769], 10);
+
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(mapInstance.current);
+
+      orders.forEach((order) => {
+        if (order.latitude && order.longitude) {
+          const marker = window.L.marker([order.latitude, order.longitude]).addTo(mapInstance.current);
+          marker.bindPopup(`<strong>${order.clientName}</strong><br/>📞 ${order.clientPhone}<br/>💰 $${order.total}`);
+        }
+      });
+    };
+    document.head.appendChild(script);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -358,14 +394,37 @@ function AdminPanel({ user }: { user: any }) {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="font-serif text-3xl font-bold text-black mb-2">
-            Pedidos Recibidos
-          </h2>
-          <p className="text-foreground/70">
-            Total de pedidos: {orders.length}
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h2 className="font-serif text-3xl font-bold text-black mb-2">
+              Pedidos Recibidos
+            </h2>
+            <p className="text-foreground/70">
+              Total de pedidos: {orders.length}
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setShowMap(!showMap);
+              if (!showMap) {
+                setTimeout(initializeMap, 100);
+              }
+            }}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg text-primary-foreground font-semibold transform hover:scale-105 transition-all"
+          >
+            {showMap ? "Ocultar Mapa" : "Ver Mapa"}
+          </Button>
         </div>
+
+        {showMap && (
+          <div className="mb-8 rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
+            <div
+              ref={mapRef}
+              className="w-full bg-background"
+              style={{ minHeight: "400px" }}
+            />
+          </div>
+        )}
 
         {orders.length === 0 ? (
           <div className="rounded-xl bg-card p-8 border-2 border-border text-center">
